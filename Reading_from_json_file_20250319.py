@@ -1,7 +1,7 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, split, lower
+from pyspark.sql.functions import explode, split, lower, countDistinct
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, BooleanType, ArrayType
-
+from pyspark.sql.functions import col, upper, count
 
 # Khởi tạo SparkSession
 spark = SparkSession.builder \
@@ -639,6 +639,38 @@ df = spark.read.schema(schema).json("2015_03_17_dta.json")
 # Kiểm tra kết quả
 #df.printSchema()
 #df.show(5, truncate=False)
-df.select(df["payload.issue.comments_url"].alias("comments_url"),
-          df["payload.forkee.owner.login"].alias("login"),
-          df["payload.forkee.owner.id"].alias("id")).show()
+# df.select(df["payload.issue.comments_url"].alias("comments_url"),
+#           df["payload.forkee.owner.login"].alias("login"),
+#           df["payload.forkee.owner.id"].alias("id")).show()
+
+# df.select(
+#     col("id")*2,
+#     upper(col("type")).alias("upper_type")
+# ).show()
+# from pyspark.sql.functions import col, countDistinct
+# df.select(col("payload.forkee.owner.type").alias("in_type")) \
+#         .distinct() \
+#         .select(countDistinct("in_type").alias("count_type")) \
+#         .show()
+#
+# df.select(col("payload.forkee.owner.type").alias("in_type")) \
+#         .distinct() \
+#         .select(count("*").alias("count_type")) \
+#         .show()
+
+# df.select(col("payload.forkee.owner.type").alias("in_type")) \
+#   .groupBy("in_type") \
+#   .count() \
+#   .show()
+
+# df.select(col("payload.forkee.owner.type").alias("in_type")) \
+#         .groupBy("in_type") \
+#         .count().alias("count_in_group") \
+#         .show()
+
+# Sort
+
+df.select(col("payload.forkee.owner.type").alias("in_type"), col("payload.forkee.owner.id").alias("in_id")) \
+        .where(col("in_type").isNotNull()) \
+        .orderBy(col("in_type").desc(), col("in_id").asc()) \
+        .show()
